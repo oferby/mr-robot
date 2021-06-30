@@ -90,6 +90,7 @@ class PlanningAgent(Agent):
         self.come_from = {}
         self.active = True
         self.plan_completed = False
+        self.path = None
 
     def get_action(self, obs):
 
@@ -117,7 +118,9 @@ class PlanningAgent(Agent):
             self.open_set.remove(str(current_loc))
 
             if self.world.is_overlap(current_loc, self.target_location):
-                return self.return_path()
+                self.path = self.return_path(current_loc)
+                self.world.draw_path(self.path)
+                return
 
             neighbors = self.get_neighbors(current_loc)
 
@@ -163,8 +166,16 @@ class PlanningAgent(Agent):
 
         return neighbors
 
-    def return_path(self):
-        pass
+    def return_path(self, last_loc):
+        path = []
+        current = last_loc
+        path.insert(0, current)
+        while str(current) in self.come_from:
+            current = self.come_from[str(current)]
+            path.insert(0, current)
+
+        return path
+
 
     def add_location_to_open_set(self, location):
         heapq.heappush(self.priority_q, (0, location))

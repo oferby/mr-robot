@@ -118,6 +118,7 @@ class World:
         self.draw_central_agent = False
         self.target_location = None
         self.planned_positions = []
+        self.path = None
 
         pygame.font.init()
         self.font = pygame.font.SysFont('David', 20)
@@ -126,6 +127,7 @@ class World:
         self.agent_location = []
         self.target_location = None
         self.planned_positions = []
+        self.path = []
         self.create()
         self.init_agent_location()
         self.background = np.copy(self.get_surface())
@@ -145,6 +147,9 @@ class World:
 
         for p in self.planned_positions:
             self.draw_rec(p[0], p[1], ROBOT_SIZE, LIGHT_GREY)
+
+        for p in self.path:
+            self.draw_rec(p[0], p[1], ROBOT_SIZE, GREY)
 
         self.draw_rec(self.agent_location[0], self.agent_location[1], ROBOT_SIZE, BLUE)
 
@@ -401,4 +406,9 @@ class World:
 
     def reset_planned(self):
         self.planned_positions = []
+        self.path = []
+        self.draw()
+
+    def draw_path(self, path):
+        self.path = path
         self.draw()
