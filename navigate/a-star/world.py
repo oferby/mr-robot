@@ -7,6 +7,7 @@ pygame.init()
 
 WHITE = (255, 255, 255)
 GREY = (20, 20, 20)
+LIGHT_GREY = (211, 211, 211)
 BLACK = (0, 0, 0)
 PURPLE = (100, 0, 100)
 RED = (255, 0, 0)
@@ -24,7 +25,7 @@ pygame.display.set_caption("A* Simulator")
 
 done = False
 
-width = 100
+width = 150
 cols = int(WORLD_SIZE[0] / width)
 rows = int(WORLD_SIZE[1] / width)
 
@@ -114,24 +115,26 @@ class World:
         self.turn = None
         self.max_turns = None
         self.is_mdp = False
-        self.draw_agent_location = False
-        # self.reset()
+        self.draw_central_agent = False
+        self.target_location = None
+        self.planned_positions = []
 
         pygame.font.init()
         self.font = pygame.font.SysFont('David', 20)
 
     def reset(self):
         self.agent_location = []
+        self.target_location = None
+        self.planned_positions = []
         self.create()
         self.init_agent_location()
         self.background = np.copy(self.get_surface())
-        self.target_location = [660, 660]
         self.turn = 0
         self.max_turns = 2000
         self.draw()
 
-        # obs, reward, done
-        return self.get_partial_obs_for_agent(), 0, False
+        # obs
+        return self.get_partial_obs_for_agent()
 
     @staticmethod
     def get_surface():
@@ -139,10 +142,19 @@ class World:
 
     def draw(self):
         pygame.surfarray.blit_array(pygame.display.get_surface(), self.background)
+
+        for p in self.planned_positions:
+            self.draw_rec(p[0], p[1], ROBOT_SIZE, LIGHT_GREY)
+
         self.draw_rec(self.agent_location[0], self.agent_location[1], ROBOT_SIZE, BLUE)
-        if self.draw_agent_location:
+
+        if self.draw_central_agent:
             x, y = self.get_agent_location()
             self.draw_rec(x - 1, y - 1, 2, RED)
+
+        if self.target_location:
+            self.draw_rec(self.target_location[0] - (ROBOT_SIZE // 2), self.target_location[1] - (ROBOT_SIZE // 2),
+                          ROBOT_SIZE, RED)
 
         pygame.display.flip()
 
@@ -163,7 +175,7 @@ class World:
         elif a == 3:
             new_pos[0] = new_pos[0] - STEP_SIZE
         elif a == 98:
-            self.draw_agent_location = not self.draw_agent_location
+            self.draw_central_agent = not self.draw_central_agent
 
         if self.check_valid_action(new_pos, a):
             self.agent_location = new_pos
@@ -174,8 +186,7 @@ class World:
             print('Max turns reached')
             return self.get_obs(), -1, True
 
-        reward, done = self.get_reward()
-        return self.get_obs(), reward, done
+        return self.get_obs()
 
     @staticmethod
     def draw_rec(x, y, size, color):
@@ -193,11 +204,6 @@ class World:
         if self.is_mdp:
             return self.get_surface().copy()
         return self.get_partial_obs_for_agent()
-
-    def get_reward(self):
-        if self.agent_location[0] == self.target_location[0] and self.target_location[1] == self.agent_location[1]:
-            return 100, True
-        return -1, False
 
     def check_valid_action(self, new_location, a):
         surface = self.get_surface()
@@ -235,7 +241,12 @@ class World:
 
         return True
 
-    def check_surface_for_position(self, x, y, size):
+    def check_surface_for_central_position(self, x, y):
+        size = ROBOT_SIZE // 2
+        s = self.get_surface()[x - size: x + size, y - size: y + size]
+        return self.check_surface(s, np.size(s))
+
+    def check_surface_for_position(self, x, y, size=ROBOT_SIZE):
         s = self.get_surface()[x: x + size, y: y + size]
         return self.check_surface(s, np.size(s))
 
@@ -250,8 +261,8 @@ class World:
         return self.get_partial_obs(x, y)
 
     def get_agent_location(self):
-        x = int(self.agent_location[0] + ROBOT_SIZE / 2)
-        y = int(self.agent_location[1] + ROBOT_SIZE / 2)
+        x = int(self.agent_location[0] + ROBOT_SIZE // 2)
+        y = int(self.agent_location[1] + ROBOT_SIZE // 2)
         return x, y
 
     def get_partial_obs(self, x, y):
@@ -353,12 +364,39 @@ class World:
         while True:
             i = np.random.randint(0, 4)
             if i == 0:
-                y = np.random.randint(10, 700)
+                y = np.random.randint(10, WORLD_SIZE[1] - 1)
                 if not self.check_surface_for_position(5, y, ROBOT_SIZE):
                     self.agent_location = [5, y]
                     break
             elif i == 1:
-                y = np.random.randint(10, 700)
+                y = np.random.randint(10, WORLD_SIZE[1] - 1)
                 if not self.check_surface_for_position(5, y, ROBOT_SIZE):
                     self.agent_location = [WORLD_SIZE[0] - ROBOT_SIZE - 2, y]
                     break
+
+    def set_target_location(self, location):
+        x, y = location
+        if not self.check_surface_for_position(x - (ROBOT_SIZE // 2), y - (ROBOT_SIZE // 2), ROBOT_SIZE):
+            self.target_location = [x, y]
+            self.draw()
+
+    def remove_target_location(self):
+        self.target_location = None
+
+    def add_to_planned_positions(self, position):
+        self.planned_positions.append([position[0] - (ROBOT_SIZE // 2), position[1] - (ROBOT_SIZE // 2)])
+        self.draw()
+
+    @staticmethod
+    def is_overlap(pos1, pos2):
+
+        r_size = ROBOT_SIZE // 2
+
+        rec1 = pygame.rect.Rect(pos1[0] - r_size, pos1[1] - r_size, ROBOT_SIZE, ROBOT_SIZE)
+        rec2 = pygame.rect.Rect(pos2[0] - r_size, pos2[1] - r_size, ROBOT_SIZE, ROBOT_SIZE)
+
+        return rec1.colliderect(rec2)
+
+    def reset_planned(self):
+        self.planned_positions = []
+        self.draw()
