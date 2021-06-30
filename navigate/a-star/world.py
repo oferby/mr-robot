@@ -148,8 +148,9 @@ class World:
         for p in self.planned_positions:
             self.draw_rec(p[0], p[1], ROBOT_SIZE, LIGHT_GREY)
 
+        half_size = ROBOT_SIZE // 2
         for p in self.path:
-            self.draw_rec(p[0], p[1], ROBOT_SIZE, GREY)
+            self.draw_rec(p[0] - half_size, p[1] - half_size, ROBOT_SIZE, GREY)
 
         self.draw_rec(self.agent_location[0], self.agent_location[1], ROBOT_SIZE, BLUE)
 
@@ -386,6 +387,8 @@ class World:
         if not self.check_surface_for_position(x - (ROBOT_SIZE // 2), y - (ROBOT_SIZE // 2), ROBOT_SIZE):
             self.target_location = [x, y]
             self.draw()
+            return True
+        return False
 
     def remove_target_location(self):
         self.target_location = None

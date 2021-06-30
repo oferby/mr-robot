@@ -176,7 +176,6 @@ class PlanningAgent(Agent):
 
         return path
 
-
     def add_location_to_open_set(self, location):
         heapq.heappush(self.priority_q, (0, location))
         self.open_set.add(location)
@@ -215,8 +214,9 @@ class PlanningAgent(Agent):
 
             if event.type == pygame.MOUSEBUTTONUP:
                 location = pygame.mouse.get_pos()
-                self.world.set_target_location(location)
-                self.set_target(location)
+                if self.world.set_target_location(location):
+                    self.set_target(location)
+
                 return
 
             elif event.type == pygame.KEYUP:
