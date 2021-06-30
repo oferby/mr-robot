@@ -18,14 +18,14 @@ BLACK_INT = 0
 ROBOT_SIZE = 20
 STEP_SIZE = 5
 
-WORLD_SIZE = (700, 700)
+WORLD_SIZE = (800, 800)
 screen = pygame.display.set_mode(WORLD_SIZE)
 
 pygame.display.set_caption("A* Simulator")
 
 done = False
 
-width = 150
+width = 200
 cols = int(WORLD_SIZE[0] / width)
 rows = int(WORLD_SIZE[1] / width)
 
@@ -243,6 +243,8 @@ class World:
 
     def check_surface_for_central_position(self, x, y):
         size = ROBOT_SIZE // 2
+        if (x - size) < 0 or (x + size) > WORLD_SIZE[0] or (y - size) < 0 or (y + size) > WORLD_SIZE[1]:
+            return True
         s = self.get_surface()[x - size: x + size, y - size: y + size]
         return self.check_surface(s, np.size(s))
 
