@@ -21,7 +21,7 @@ screen = pygame.display.set_mode(WORLD_SIZE)
 screen.fill(WHITE)
 pygame.display.set_caption("A* Block Simulator")
 pygame.font.init()
-FONT = pygame.font.SysFont('David', 20)
+FONT = pygame.font.SysFont('David', 30)
 
 
 def get_event():
@@ -65,19 +65,31 @@ class World:
     def __init__(self):
         self.background = None
         self.state = None
-        self.reset()
+        self.build_background()
 
     def reset(self):
-        self.background = np.copy(self.get_surface())
-        self.state = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+
+        self.randomize_state()
         self.draw()
 
-    def draw(self):
-        pygame.surfarray.blit_array(pygame.display.get_surface(), self.background)
+    def build_background(self):
+        pygame.surfarray.blit_array(pygame.display.get_surface(), np.copy(self.get_surface()))
 
         for i in range(3):
             for j in range(3):
                 self.draw_rec_outline(i * BLOCK_SIZE, j * BLOCK_SIZE, BLOCK_SIZE, BLACK, 3)
+
+        self.background = np.copy(self.get_surface())
+
+    def randomize_state(self):
+        state = np.arange(9)
+        np.random.shuffle(state)
+        self.state = state.reshape((3, 3))
+
+    def draw(self):
+        pygame.surfarray.blit_array(pygame.display.get_surface(), self.background)
+        for i in range(3):
+            for j in range(3):
                 middle_pos = BLOCK_SIZE // 2
                 current_state = self.state.flatten()
 
