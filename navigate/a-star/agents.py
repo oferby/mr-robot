@@ -142,7 +142,7 @@ class PlanningAgent(Agent):
 
     def get_neighbors(self, current):
         neighbors = []
-        step_size = world.STEP_SIZE * 4
+        step_size = world.ROBOT_SIZE
 
         loc = current.copy()
         loc[0] -= step_size
