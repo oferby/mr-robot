@@ -55,8 +55,26 @@ def get_event():
             elif k == 115:
                 return 1, 98
             # p
-            elif k == 112:
-                return 1, 97
+            elif k == 1073741922:
+                return 1, 0
+            elif k == 1073741913:
+                return 1, 1
+            elif k == 1073741914:
+                return 1, 2
+            elif k == 1073741915:
+                return 1, 3
+            elif k == 1073741916:
+                return 1, 4
+            elif k == 1073741917:
+                return 1, 5
+            elif k == 1073741918:
+                return 1, 6
+            elif k == 1073741919:
+                return 1, 7
+            elif k == 1073741920:
+                return 1, 8
+
+
     return
 
 
@@ -66,11 +84,12 @@ class World:
         self.background = None
         self.state = None
         self.build_background()
+        self.final_state = np.array(9)
 
     def reset(self):
-
         self.randomize_state()
         self.draw()
+        return np.copy(self.state)
 
     def build_background(self):
         pygame.surfarray.blit_array(pygame.display.get_surface(), np.copy(self.get_surface()))
@@ -82,9 +101,8 @@ class World:
         self.background = np.copy(self.get_surface())
 
     def randomize_state(self):
-        state = np.arange(9)
-        np.random.shuffle(state)
-        self.state = state.reshape((3, 3))
+        self.state = np.arange(9)
+        np.random.shuffle(self.state)
 
     def draw(self):
         pygame.surfarray.blit_array(pygame.display.get_surface(), self.background)
@@ -112,23 +130,118 @@ class World:
         txt = FONT.render(text, True, color, WHITE)
         screen.blit(txt, position)
 
-    @staticmethod
-    def update_display():
-        pygame.display.update()
+    # @staticmethod
+    # def update_display():
+    #     pygame.display.update()
 
     @staticmethod
     def get_surface():
         return pygame.surfarray.pixels2d(screen)
 
+    # action is the number of the box 0-8
+    # returns obs, reward, done
     def take_action(self, action):
-        pass
+        if action == 0:
+            if self.state[1] == 0:
+                self.switch_state(1, 0)
+                self.draw()
+            elif self.state[3] == 0:
+                self.switch_state(3, 0)
+                self.draw()
+        elif action == 1:
+            if self.state[0] == 0:
+                self.switch_state(0, 1)
+                self.draw()
+            elif self.state[2] == 0:
+                self.switch_state(2, 1)
+                self.draw()
+            elif self.state[4] == 0:
+                self.switch_state(4, 1)
+                self.draw()
+        elif action == 2:
+            if self.state[1] == 0:
+                self.switch_state(1, 2)
+                self.draw()
+            elif self.state[5] == 0:
+                self.switch_state(2, 5)
+                self.draw()
+        elif action == 3:
+            if self.state[0] == 0:
+                self.switch_state(3, 0)
+                self.draw()
+            elif self.state[4] == 0:
+                self.switch_state(3, 4)
+                self.draw()
+            elif self.state[6] == 0:
+                self.switch_state(6, 3)
+                self.draw()
+        elif action == 4:
+            if self.state[1] == 0:
+                self.switch_state(1, 4)
+                self.draw()
+            elif self.state[3] == 0:
+                self.switch_state(3, 4)
+                self.draw()
+            elif self.state[5] == 0:
+                self.switch_state(5, 4)
+                self.draw()
+            elif self.state[7] == 0:
+                self.switch_state(7, 4)
+                self.draw()
+        elif action == 5:
+            if self.state[2] == 0:
+                self.switch_state(2, 5)
+                self.draw()
+            elif self.state[4] == 0:
+                self.switch_state(4, 5)
+                self.draw()
+            elif self.state[8] == 0:
+                self.switch_state(6, 5)
+                self.draw()
+        elif action == 6:
+            if self.state[3] == 0:
+                self.switch_state(3, 6)
+                self.draw()
+            elif self.state[7] == 0:
+                self.switch_state(7, 6)
+                self.draw()
+        elif action == 7:
+            if self.state[6] == 0:
+                self.switch_state(6, 7)
+                self.draw()
+            elif self.state[4] == 0:
+                self.switch_state(4, 7)
+                self.draw()
+            elif self.state[8] == 0:
+                self.switch_state(8, 7)
+                self.draw()
+        elif action == 8:
+            if self.state[5] == 0:
+                self.switch_state(5, 8)
+                self.draw()
+            elif self.state[7] == 0:
+                self.switch_state(7, 8)
+                self.draw()
+
+            return self.check_reward()
+
+    def check_reward(self):
+        if np.equal(self.final_state, self.state):
+            return np.copy(self.state), 100, True
+        else:
+            return np.copy(self.state), -1, False
+
+    def switch_state(self, x, y):
+        tmp = self.state[x]
+        self.state[x] = self.state[y]
+        self.state[y] = tmp
 
     def handle_events(self):
         event = get_event()
         if event:
             is_kb_event, event_info = event
             if is_kb_event:
-                return event_info
+                return self.take_action(event_info)
             else:
                 # mouse event
                 print(event_info)
