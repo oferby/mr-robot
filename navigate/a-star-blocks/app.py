@@ -6,7 +6,7 @@ world = World()
 while True:
 
     obs = world.reset()
-    agent = PlanningAgent()
+    agent = PlanningAgent(world.get_final_state(), obs)
 
     while True:
         action = agent.get_action(obs)

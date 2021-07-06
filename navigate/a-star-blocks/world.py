@@ -74,8 +74,48 @@ def get_event():
             elif k == 1073741920:
                 return 1, 8
 
-
     return
+
+
+def get_neighbors(current):
+    neighbors = []
+    zero_location = np.where(current == 0)[0][0]
+    if zero_location == 0:
+        actions = [1, 3]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 1:
+        actions = [0, 2, 4]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 2:
+        actions = [1, 5]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 3:
+        actions = [0, 4, 6]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 4:
+        actions = [1, 3, 5, 7]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 5:
+        actions = [2, 4, 8]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 6:
+        actions = [3, 7]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 7:
+        actions = [4, 6, 8]
+        add_neigbor(neighbors, actions, current)
+    elif zero_location == 8:
+        actions = [5, 7]
+        add_neigbor(neighbors, actions, current)
+
+    return neighbors
+
+
+def add_neigbor(neighbors, actions, current):
+    for action in actions:
+        s = np.copy(current)
+        World.get_state_for_action(s, action)
+        neighbors.append(s)
 
 
 class World:
@@ -84,7 +124,7 @@ class World:
         self.background = None
         self.state = None
         self.build_background()
-        self.final_state = np.array(9)
+        self.final_state = np.arange(9)
 
     def reset(self):
         self.randomize_state()
@@ -102,7 +142,13 @@ class World:
 
     def randomize_state(self):
         self.state = np.arange(9)
-        np.random.shuffle(self.state)
+
+        for i in range(40):
+            neighbors = get_neighbors(self.state)
+            r = np.random.randint(0, len(neighbors))
+            self.state = neighbors[r]
+
+        print("init state: {}".format(self.state))
 
     def draw(self):
         pygame.surfarray.blit_array(pygame.display.get_surface(), self.background)
@@ -130,10 +176,6 @@ class World:
         txt = FONT.render(text, True, color, WHITE)
         screen.blit(txt, position)
 
-    # @staticmethod
-    # def update_display():
-    #     pygame.display.update()
-
     @staticmethod
     def get_surface():
         return pygame.surfarray.pixels2d(screen)
@@ -141,107 +183,97 @@ class World:
     # action is the number of the box 0-8
     # returns obs, reward, done
     def take_action(self, action):
-        if action == 0:
-            if self.state[1] == 0:
-                self.switch_state(1, 0)
-                self.draw()
-            elif self.state[3] == 0:
-                self.switch_state(3, 0)
-                self.draw()
-        elif action == 1:
-            if self.state[0] == 0:
-                self.switch_state(0, 1)
-                self.draw()
-            elif self.state[2] == 0:
-                self.switch_state(2, 1)
-                self.draw()
-            elif self.state[4] == 0:
-                self.switch_state(4, 1)
-                self.draw()
-        elif action == 2:
-            if self.state[1] == 0:
-                self.switch_state(1, 2)
-                self.draw()
-            elif self.state[5] == 0:
-                self.switch_state(2, 5)
-                self.draw()
-        elif action == 3:
-            if self.state[0] == 0:
-                self.switch_state(3, 0)
-                self.draw()
-            elif self.state[4] == 0:
-                self.switch_state(3, 4)
-                self.draw()
-            elif self.state[6] == 0:
-                self.switch_state(6, 3)
-                self.draw()
-        elif action == 4:
-            if self.state[1] == 0:
-                self.switch_state(1, 4)
-                self.draw()
-            elif self.state[3] == 0:
-                self.switch_state(3, 4)
-                self.draw()
-            elif self.state[5] == 0:
-                self.switch_state(5, 4)
-                self.draw()
-            elif self.state[7] == 0:
-                self.switch_state(7, 4)
-                self.draw()
-        elif action == 5:
-            if self.state[2] == 0:
-                self.switch_state(2, 5)
-                self.draw()
-            elif self.state[4] == 0:
-                self.switch_state(4, 5)
-                self.draw()
-            elif self.state[8] == 0:
-                self.switch_state(6, 5)
-                self.draw()
-        elif action == 6:
-            if self.state[3] == 0:
-                self.switch_state(3, 6)
-                self.draw()
-            elif self.state[7] == 0:
-                self.switch_state(7, 6)
-                self.draw()
-        elif action == 7:
-            if self.state[6] == 0:
-                self.switch_state(6, 7)
-                self.draw()
-            elif self.state[4] == 0:
-                self.switch_state(4, 7)
-                self.draw()
-            elif self.state[8] == 0:
-                self.switch_state(8, 7)
-                self.draw()
-        elif action == 8:
-            if self.state[5] == 0:
-                self.switch_state(5, 8)
-                self.draw()
-            elif self.state[7] == 0:
-                self.switch_state(7, 8)
-                self.draw()
 
-            return self.check_reward()
+        World.get_state_for_action(self.state, action)
+        self.draw()
+        return self.check_reward()
+
+    @staticmethod
+    def get_state_for_action(state, action):
+        if action == 0:
+            if state[1] == 0:
+                state = World.switch_state(state, 1, 0)
+            elif state[3] == 0:
+                state = World.switch_state(state, 3, 0)
+        elif action == 1:
+            if state[0] == 0:
+                state = World.switch_state(state, 0, 1)
+            elif state[2] == 0:
+                state = World.switch_state(state, 2, 1)
+            elif state[4] == 0:
+                state = World.switch_state(state, 4, 1)
+        elif action == 2:
+            if state[1] == 0:
+                state = World.switch_state(state, 1, 2)
+            elif state[5] == 0:
+                state = World.switch_state(state, 2, 5)
+        elif action == 3:
+            if state[0] == 0:
+                state = World.switch_state(state, 3, 0)
+            elif state[4] == 0:
+                state = World.switch_state(state, 3, 4)
+            elif state[6] == 0:
+                state = World.switch_state(state, 6, 3)
+        elif action == 4:
+            if state[1] == 0:
+                state = World.switch_state(state, 1, 4)
+            elif state[3] == 0:
+                state = World.switch_state(state, 3, 4)
+            elif state[5] == 0:
+                state = World.switch_state(state, 5, 4)
+            elif state[7] == 0:
+                state = World.switch_state(state, 7, 4)
+        elif action == 5:
+            if state[2] == 0:
+                state = World.switch_state(state, 2, 5)
+            elif state[4] == 0:
+                state = World.switch_state(state, 4, 5)
+            elif state[8] == 0:
+                state = World.switch_state(state, 6, 5)
+        elif action == 6:
+            if state[3] == 0:
+                state = World.switch_state(state, 3, 6)
+            elif state[7] == 0:
+                state = World.switch_state(state, 7, 6)
+        elif action == 7:
+            if state[6] == 0:
+                state = World.switch_state(state, 6, 7)
+            elif state[4] == 0:
+                state = World.switch_state(state, 4, 7)
+            elif state[8] == 0:
+                state = World.switch_state(state, 8, 7)
+        elif action == 8:
+            if state[5] == 0:
+                state = World.switch_state(state, 5, 8)
+            elif state[7] == 0:
+                state = World.switch_state(state, 7, 8)
+
+        return state
 
     def check_reward(self):
-        if np.equal(self.final_state, self.state):
+        if np.array_equal(self.final_state, self.state):
             return np.copy(self.state), 100, True
         else:
             return np.copy(self.state), -1, False
 
-    def switch_state(self, x, y):
-        tmp = self.state[x]
-        self.state[x] = self.state[y]
-        self.state[y] = tmp
+    @staticmethod
+    def switch_state(state, x, y):
+        tmp = state[x]
+        state[x] = state[y]
+        state[y] = tmp
+        return state
+
+    def get_final_state(self):
+        return np.copy(self.final_state)
 
     def handle_events(self):
         event = get_event()
         if event:
             is_kb_event, event_info = event
             if is_kb_event:
-                return self.take_action(event_info)
+                if event_info < 9:
+                    return self.take_action(event_info)
+                return event_info
             else:
                 # mouse event
                 print(event_info)
