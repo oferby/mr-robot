@@ -25,18 +25,18 @@ pygame.display.set_caption("A* Simulator")
 
 done = False
 
-width = 200
-cols = int(WORLD_SIZE[0] / width)
-rows = int(WORLD_SIZE[1] / width)
+CELL_SIZE = 50
+cols = int(WORLD_SIZE[0] / CELL_SIZE)
+rows = int(WORLD_SIZE[1] / CELL_SIZE)
 
 stack = []
 
 
 class Cell:
     def __init__(self, x, y, grid):
-        global width
-        self.x = x * width
-        self.y = y * width
+        global CELL_SIZE
+        self.x = x * CELL_SIZE
+        self.y = y * CELL_SIZE
         self.grid = grid
 
         self.visited = False
@@ -56,34 +56,34 @@ class Cell:
 
     def draw(self):
         if self.current:
-            pygame.draw.rect(screen, WHITE, (self.x, self.y, width, width))
+            pygame.draw.rect(screen, WHITE, (self.x, self.y, CELL_SIZE, CELL_SIZE))
         elif self.visited:
-            pygame.draw.rect(screen, WHITE, (self.x, self.y, width, width))
+            pygame.draw.rect(screen, WHITE, (self.x, self.y, CELL_SIZE, CELL_SIZE))
 
             if self.walls[0]:
-                pygame.draw.line(screen, BLACK, (self.x, self.y), ((self.x + width), self.y), 1)  # top
+                pygame.draw.line(screen, BLACK, (self.x, self.y), ((self.x + CELL_SIZE), self.y), 1)  # top
             if self.walls[1]:
-                pygame.draw.line(screen, BLACK, ((self.x + width), self.y), ((self.x + width), (self.y + width)),
+                pygame.draw.line(screen, BLACK, ((self.x + CELL_SIZE), self.y), ((self.x + CELL_SIZE), (self.y + CELL_SIZE)),
                                  1)  # right
             if self.walls[2]:
-                pygame.draw.line(screen, BLACK, ((self.x + width), (self.y + width)), (self.x, (self.y + width)),
+                pygame.draw.line(screen, BLACK, ((self.x + CELL_SIZE), (self.y + CELL_SIZE)), (self.x, (self.y + CELL_SIZE)),
                                  1)  # bottom
             if self.walls[3]:
-                pygame.draw.line(screen, BLACK, (self.x, (self.y + width)), (self.x, self.y), 1)  # left
+                pygame.draw.line(screen, BLACK, (self.x, (self.y + CELL_SIZE)), (self.x, self.y), 1)  # left
 
     def checkNeighbors(self):
         # print("Top; y: " + str(int(self.y / width)) + ", y - 1: " + str(int(self.y / width) - 1))
-        if int(self.y / width) - 1 >= 0:
-            self.top = self.grid[int(self.y / width) - 1][int(self.x / width)]
+        if int(self.y / CELL_SIZE) - 1 >= 0:
+            self.top = self.grid[int(self.y / CELL_SIZE) - 1][int(self.x / CELL_SIZE)]
         # print("Right; x: " + str(int(self.x / width)) + ", x + 1: " + str(int(self.x / width) + 1))
-        if int(self.x / width) + 1 <= cols - 1:
-            self.right = self.grid[int(self.y / width)][int(self.x / width) + 1]
+        if int(self.x / CELL_SIZE) + 1 <= cols - 1:
+            self.right = self.grid[int(self.y / CELL_SIZE)][int(self.x / CELL_SIZE) + 1]
         # print("Bottom; y: " + str(int(self.y / width)) + ", y + 1: " + str(int(self.y / width) + 1))
-        if int(self.y / width) + 1 <= rows - 1:
-            self.bottom = self.grid[int(self.y / width) + 1][int(self.x / width)]
+        if int(self.y / CELL_SIZE) + 1 <= rows - 1:
+            self.bottom = self.grid[int(self.y / CELL_SIZE) + 1][int(self.x / CELL_SIZE)]
         # print("Left; x: " + str(int(self.x / width)) + ", x - 1: " + str(int(self.x / width) - 1))
-        if int(self.x / width) - 1 >= 0:
-            self.left = self.grid[int(self.y / width)][int(self.x / width) - 1]
+        if int(self.x / CELL_SIZE) - 1 >= 0:
+            self.left = self.grid[int(self.y / CELL_SIZE)][int(self.x / CELL_SIZE) - 1]
         # print("--------------------")
 
         if self.top != 0:
@@ -309,8 +309,8 @@ class World:
 
     @staticmethod
     def remove_walls(current_cell, next_cell):
-        x = int(current_cell.x / width) - int(next_cell.x / width)
-        y = int(current_cell.y / width) - int(next_cell.y / width)
+        x = int(current_cell.x / CELL_SIZE) - int(next_cell.x / CELL_SIZE)
+        y = int(current_cell.y / CELL_SIZE) - int(next_cell.y / CELL_SIZE)
         if x == -1:  # right of current
             current_cell.walls[1] = False
             next_cell.walls[3] = False
