@@ -33,7 +33,7 @@ class PlanningAgent:
 
         self.plan_with_a_star(np.copy(self.init_state), np.copy(self.final_state))
         print("plan finished")
-        print("path: {}".format(self.path))
+        print("steps: {}, path: {}".format(len(self.path), self.path))
 
     def plan_with_a_star(self, start, end):
         print("planning.....")
