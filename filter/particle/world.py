@@ -34,8 +34,8 @@ stack = []
 class Cell:
     def __init__(self, x, y, grid):
         global CELL_SIZE
-        self.x = x * width
-        self.y = y * width
+        self.x = x * CELL_SIZE
+        self.y = y * CELL_SIZE
         self.grid = grid
 
         self.visited = False
