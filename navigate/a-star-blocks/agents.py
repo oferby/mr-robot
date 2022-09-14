@@ -80,9 +80,10 @@ class PlanningAgent:
             y1 = s % 3
             x2 = i // 3
             y2 = i % 3
-            a1 = np.array([x1, y1])
-            a2 = np.array([x2, y2])
-            h += np.linalg.norm(a1 - a2)
+            h = abs(y2 - y1) + abs(x2 - x1)
+            # a1 = np.array([x1, y1])
+            # a2 = np.array([x2, y2])
+            # h += np.linalg.norm(a1 - a2)
         return h
 
     def get_g(self, node):
