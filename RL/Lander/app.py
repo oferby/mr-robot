@@ -30,14 +30,14 @@ import sys
 sys.path.insert(0, "/")
 import agents
 
-env = gym.make('LunarLander-v2')
+env = gym.make('LunarLander-v2', render_mode='human')
 env.reset()
 
 done = False
 cumulative_reward = 0
 steps = 0
 
-agent = agents.RandomAgent(4, None)
+agent = agents.RandomAgent(env.action_space.n, env.observation_space.shape)
 observation, _, _, info = env.step(0)
 while not done:
     env.render()
